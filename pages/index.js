@@ -1,5 +1,64 @@
 import { useEffect, useState } from 'react'
 
+const copy = {
+  zh: {
+    title: 'AI Summary App - 文件上传管理',
+    languageToggle: 'English',
+    chooseFile: '选择文件',
+    upload: '上传到 Supabase',
+    processing: '处理中...',
+    uploadRequired: '请先选择一个文件',
+    uploading: '上传中...',
+    uploadSuccess: '上传成功',
+    deleting: '删除中...',
+    deleteSuccess: '删除成功',
+    summarizeTextTitle: '文本摘要',
+    summarizeTextPlaceholder: '粘贴文本后点击生成摘要',
+    summarizeTextButton: '生成文本摘要',
+    summarizeTextRequired: '请先输入要摘要的文本',
+    summarizingText: 'AI 摘要生成中...',
+    summarizeTextSuccess: '摘要生成成功',
+    summaryTitle: '摘要结果',
+    summaryEmpty: '暂无摘要',
+    filesTitle: '文件列表',
+    filesEmpty: '暂无文件',
+    openFile: '打开文件',
+    deleteFile: '删除',
+    summarizeFile: '生成该文件摘要',
+    summarizingFile: '正在读取文件并生成摘要...',
+    summarizeFileSuccess: '文件摘要生成成功',
+    fileSize: '大小'
+  },
+  en: {
+    title: 'AI Summary App - File Upload Manager',
+    languageToggle: '中文',
+    chooseFile: 'Choose File',
+    upload: 'Upload to Supabase',
+    processing: 'Processing...',
+    uploadRequired: 'Please choose a file first',
+    uploading: 'Uploading...',
+    uploadSuccess: 'Upload successful',
+    deleting: 'Deleting...',
+    deleteSuccess: 'Delete successful',
+    summarizeTextTitle: 'Text Summary',
+    summarizeTextPlaceholder: 'Paste text and click to summarize',
+    summarizeTextButton: 'Generate Text Summary',
+    summarizeTextRequired: 'Please input text to summarize',
+    summarizingText: 'Generating AI summary...',
+    summarizeTextSuccess: 'Summary generated',
+    summaryTitle: 'Summary Result',
+    summaryEmpty: 'No summary yet',
+    filesTitle: 'File List',
+    filesEmpty: 'No files',
+    openFile: 'Open File',
+    deleteFile: 'Delete',
+    summarizeFile: 'Summarize This File',
+    summarizingFile: 'Reading file and generating summary...',
+    summarizeFileSuccess: 'File summary generated',
+    fileSize: 'Size'
+  }
+}
+
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -39,6 +98,9 @@ export default function HomePage() {
   const [message, setMessage] = useState('')
   const [inputText, setInputText] = useState('')
   const [summary, setSummary] = useState('')
+  const [lang, setLang] = useState('zh')
+
+  const t = copy[lang]
 
   async function refreshFiles() {
     const resp = await fetch('/api/files')
@@ -53,12 +115,12 @@ export default function HomePage() {
   async function handleUpload(event) {
     event.preventDefault()
     if (!selectedFile) {
-      setMessage('请先选择一个文件')
+      setMessage(t.uploadRequired)
       return
     }
 
     setLoading(true)
-    setMessage('上传中...')
+    setMessage(t.uploading)
 
     try {
       const fileBase64 = await fileToDataUrl(selectedFile)
@@ -74,7 +136,7 @@ export default function HomePage() {
 
       await readApiResponse(resp)
 
-      setMessage('上传成功')
+      setMessage(t.uploadSuccess)
       setSelectedFile(null)
       await refreshFiles()
     } catch (error) {
@@ -86,7 +148,7 @@ export default function HomePage() {
 
   async function handleDelete(path) {
     setLoading(true)
-    setMessage('删除中...')
+    setMessage(t.deleting)
     try {
       const resp = await fetch('/api/files/delete', {
         method: 'DELETE',
@@ -94,7 +156,7 @@ export default function HomePage() {
         body: JSON.stringify({ path })
       })
       await readApiResponse(resp)
-      setMessage('删除成功')
+      setMessage(t.deleteSuccess)
       await refreshFiles()
     } catch (error) {
       setMessage(error.message)
@@ -105,12 +167,12 @@ export default function HomePage() {
 
   async function handleSummarizeText() {
     if (!inputText.trim()) {
-      setMessage('请先输入要摘要的文本')
+      setMessage(t.summarizeTextRequired)
       return
     }
 
     setLoading(true)
-    setMessage('AI 摘要生成中...')
+    setMessage(t.summarizingText)
     try {
       const resp = await fetch('/api/summarize', {
         method: 'POST',
@@ -119,7 +181,7 @@ export default function HomePage() {
       })
       const data = await readApiResponse(resp)
       setSummary(data.summary || '')
-      setMessage('摘要生成成功')
+      setMessage(t.summarizeTextSuccess)
     } catch (error) {
       setMessage(error.message)
     } finally {
@@ -129,7 +191,7 @@ export default function HomePage() {
 
   async function handleSummarizeFile(path) {
     setLoading(true)
-    setMessage('正在读取文件并生成摘要...')
+    setMessage(t.summarizingFile)
     try {
       const resp = await fetch('/api/summarize', {
         method: 'POST',
@@ -138,7 +200,7 @@ export default function HomePage() {
       })
       const data = await readApiResponse(resp)
       setSummary(data.summary || '')
-      setMessage('文件摘要生成成功')
+      setMessage(t.summarizeFileSuccess)
     } catch (error) {
       setMessage(error.message)
     } finally {
@@ -147,49 +209,57 @@ export default function HomePage() {
   }
 
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto', padding: 16, fontFamily: 'sans-serif' }}>
-      <h1>AI Summary App - 文件上传管理</h1>
-
-      <form onSubmit={handleUpload} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-        <input
-          type="file"
-          onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
-          disabled={loading}
-        />
-        <button type="submit" disabled={loading || !selectedFile}>
-          {loading ? '处理中...' : '上传到 Supabase'}
+    <main style={{ maxWidth: 980, margin: '0 auto', padding: 16 }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <h1 style={{ margin: 0 }}>{t.title}</h1>
+        <button type="button" onClick={() => setLang((prev) => (prev === 'zh' ? 'en' : 'zh'))} disabled={loading}>
+          {t.languageToggle}
         </button>
-      </form>
+      </header>
 
-      {message ? <p>{message}</p> : null}
+      <section style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+        <form onSubmit={handleUpload} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input
+            type="file"
+            onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+            disabled={loading}
+            aria-label={t.chooseFile}
+          />
+          <button type="submit" disabled={loading || !selectedFile}>
+            {loading ? t.processing : t.upload}
+          </button>
+        </form>
+      </section>
 
-      <section style={{ marginBottom: 20 }}>
-        <h2>文本摘要</h2>
+      {message ? <p style={{ marginBottom: 16 }}>{message}</p> : null}
+
+      <section style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+        <h2 style={{ marginTop: 0 }}>{t.summarizeTextTitle}</h2>
         <textarea
           rows={6}
           value={inputText}
           onChange={(event) => setInputText(event.target.value)}
-          placeholder="粘贴文本后点击生成摘要"
+          placeholder={t.summarizeTextPlaceholder}
           style={{ width: '100%', maxWidth: '100%', padding: 8, boxSizing: 'border-box' }}
           disabled={loading}
         />
         <div style={{ marginTop: 8 }}>
           <button type="button" onClick={handleSummarizeText} disabled={loading || !inputText.trim()}>
-            生成文本摘要
+            {t.summarizeTextButton}
           </button>
         </div>
       </section>
 
-      <section style={{ marginBottom: 20 }}>
-        <h2>摘要结果</h2>
+      <section style={{ border: '1px solid #ddd', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+        <h2 style={{ marginTop: 0 }}>{t.summaryTitle}</h2>
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, whiteSpace: 'pre-wrap' }}>
-          {summary || '暂无摘要'}
+          {summary || t.summaryEmpty}
         </div>
       </section>
 
-      <h2>文件列表</h2>
+      <h2>{t.filesTitle}</h2>
       {files.length === 0 ? (
-        <p>暂无文件</p>
+        <p>{t.filesEmpty}</p>
       ) : (
         <ul style={{ padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
           {files.map((file) => (
@@ -198,16 +268,16 @@ export default function HomePage() {
               style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, display: 'grid', gap: 6 }}
             >
               <strong>{file.name}</strong>
-              <span>大小: {file.size} bytes</span>
+              <span>{t.fileSize}: {file.size} bytes</span>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <a href={file.publicUrl} target="_blank" rel="noreferrer">
-                  打开文件
+                  {t.openFile}
                 </a>
                 <button type="button" onClick={() => handleDelete(file.name)} disabled={loading}>
-                  删除
+                  {t.deleteFile}
                 </button>
                 <button type="button" onClick={() => handleSummarizeFile(file.name)} disabled={loading}>
-                  生成该文件摘要
+                  {t.summarizeFile}
                 </button>
               </div>
             </li>
