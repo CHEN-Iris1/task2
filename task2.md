@@ -13,7 +13,10 @@ Test the app in your local development environment, then deploy the app to Verce
 
 **Steps with major screenshots:**
 
-> [your steps and screenshots go here]
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
 
 ## Section 7: AI Summary for documents
 **Requirements:**  
