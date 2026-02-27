@@ -29,23 +29,61 @@ Test the app in your local development environment, then deploy the app to Verce
 
 **Steps with major screenshots:**
 
-> [your steps and screenshots go here]
+Enter text on the page and click "Generate Text Summary"：
+![alt text](image-5.png)
 
+Click "Generate Summary for This File"
+![alt text](image-6.png)
+
+deploy the app to Vercel successfully:
+![alt text](image-7.png)
+![alt text](image-8.png)
+![alt text](image-9.png)
 
 ## Section 8: Database Integration with Supabase  
 **Requirements:**  
-- Enhance the app to integrate with the Postgres database in Supabase to store the information about the documents and the AI generated summary.
-- Make regular commits to the repository and push the update to Github.
-- Capture and paste the screenshots of your steps during development and how you test the app.. Show a screenshot of the data stored in your Supabase Postgres Database.
 
 Test the app in your local development environment, then deploy the app to Vercel and ensure all functionality works as expected in the deployed environment.
+1. I created a Postgres table in Supabase to store uploaded document metadata and AI summaries.
+	- Table name: `document_summaries`
+	- Main fields: `file_name`, `storage_path`, `public_url`, `summary`, `created_at`, `updated_at`
 
-**Steps with major screenshots:**
+2. I integrated the backend APIs with Supabase Postgres:
+	- `upload` API now inserts one row after a successful file upload.
+	- `summarize` API now updates the `summary` field for the matched `storage_path`.
 
-> [your steps and screenshots go here]
+3. I tested the workflow locally:
+	- Upload a document.
+	- Generate summary for that uploaded file.
+	- Verify the corresponding row is created and updated in Supabase Table Editor.
+
+4. I validated the same workflow in the deployed Vercel environment and confirmed the database write/update behavior is consistent with local testing.
+
+**Screenshots:**
+
+- Supabase SQL Editor / table creation (`document_summaries`):
+![alt text](image-10.png)
+![alt text](image-11.png)
+![alt text](image-12.png)
+![alt text](image-13.png)
+
+- Local app test: upload + summary generation success:
+![alt text](image-14.png)
+![alt text](image-15.png)
+
+
+
 
 
 ## Section 9: Additional Features [OPTIONAL]
 Implement at least one additional features that you think is useful that can better differentiate your app from others. Describe the feature that you have implemented and provide a screenshot of your app with the new feature.
 
 > [Description of your additional features with screenshot goes here]
+
+Provide a function for switching between Chinese and English：
+![alt text](image-16.png)
+![alt text](image-17.png)
+
+Add a list of uploaded files with a page-turning function, with no more than 5 files per page.
+![alt text](image-18.png)
+
