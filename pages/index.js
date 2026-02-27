@@ -27,7 +27,10 @@ const copy = {
     summarizeFile: '生成该文件摘要',
     summarizingFile: '正在读取文件并生成摘要...',
     summarizeFileSuccess: '文件摘要生成成功',
-    fileSize: '大小'
+    fileSize: '大小',
+    previousPage: '上一页',
+    nextPage: '下一页',
+    pageInfo: '第 {current} / {total} 页'
   },
   en: {
     title: 'AI Summary App - File Upload Manager',
@@ -55,7 +58,10 @@ const copy = {
     summarizeFile: 'Summarize This File',
     summarizingFile: 'Reading file and generating summary...',
     summarizeFileSuccess: 'File summary generated',
-    fileSize: 'Size'
+    fileSize: 'Size',
+    previousPage: 'Previous',
+    nextPage: 'Next',
+    pageInfo: 'Page {current} / {total}'
   }
 }
 
@@ -99,13 +105,23 @@ export default function HomePage() {
   const [inputText, setInputText] = useState('')
   const [summary, setSummary] = useState('')
   const [lang, setLang] = useState('zh')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const t = copy[lang]
+  const pageSize = 5
+  const totalPages = Math.max(1, Math.ceil(files.length / pageSize))
+  const pageStart = (currentPage - 1) * pageSize
+  const paginatedFiles = files.slice(pageStart, pageStart + pageSize)
+  const pageInfo = t.pageInfo
+    .replace('{current}', String(currentPage))
+    .replace('{total}', String(totalPages))
 
   async function refreshFiles() {
     const resp = await fetch('/api/files')
     const data = await readApiResponse(resp)
-    setFiles(data.files || [])
+    const list = data.files || []
+    setFiles(list)
+    setCurrentPage(1)
   }
 
   useEffect(() => {
@@ -261,8 +277,9 @@ export default function HomePage() {
       {files.length === 0 ? (
         <p>{t.filesEmpty}</p>
       ) : (
-        <ul style={{ padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
-          {files.map((file) => (
+        <>
+          <ul style={{ padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
+            {paginatedFiles.map((file) => (
             <li
               key={file.name}
               style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, display: 'grid', gap: 6 }}
@@ -281,8 +298,27 @@ export default function HomePage() {
                 </button>
               </div>
             </li>
-          ))}
-        </ul>
+            ))}
+          </ul>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={loading || currentPage <= 1}
+            >
+              {t.previousPage}
+            </button>
+            <span>{pageInfo}</span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={loading || currentPage >= totalPages}
+            >
+              {t.nextPage}
+            </button>
+          </div>
+        </>
       )}
     </main>
   )
